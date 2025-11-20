@@ -73,7 +73,11 @@ public class ApkDecoder {
             mResDecoder = new ResourcesDecoder(mApkInfo, mConfig);
 
             OS.rmdir(outDir);
-            OS.mkdir(outDir);
+            try {
+                OS.mkdir(outDir);
+            } catch (brut.common.BrutException ex) {
+                throw new AndrolibException(ex.getMessage(), ex);
+            }
 
             LOGGER.info("Using Apktool " + mConfig.getVersion() + " on " + mApkFile.getName()
                     + (mWorker != null ? " with " + mConfig.getJobs() + " threads" : ""));
@@ -185,7 +189,11 @@ public class ApkDecoder {
             smaliDir = new File(outDir, "smali_" + fileName.substring(0, fileName.indexOf('.')));
         }
 
-        OS.mkdir(smaliDir);
+        try {
+            OS.mkdir(smaliDir);
+        } catch (brut.common.BrutException ex) {
+            throw new AndrolibException(ex.getMessage(), ex);
+        }
 
         LOGGER.info("Baksmaling " + fileName + "...");
         SmaliDecoder decoder = new SmaliDecoder(mApkFile, fileName, mConfig.isBaksmaliDebugMode());

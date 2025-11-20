@@ -82,7 +82,11 @@ public class ApkBuilder {
             }
 
             File outDir = new File(mApkDir, "build/apk");
-            OS.mkdir(outDir);
+            try {
+                OS.mkdir(outDir);
+            } catch (brut.common.BrutException ex) {
+                throw new AndrolibException(ex.getMessage(), ex);
+            }
 
             File manifest = new File(mApkDir, "AndroidManifest.xml");
             File manifestOrig = new File(mApkDir, "AndroidManifest.xml.orig");
@@ -294,7 +298,11 @@ public class ApkBuilder {
             }
 
             File netSecConfOrig = new File(mApkDir, "res/xml/network_security_config.xml");
-            OS.mkdir(netSecConfOrig.getParentFile());
+            try {
+                OS.mkdir(netSecConfOrig.getParentFile());
+            } catch (brut.common.BrutException ex) {
+                throw new AndrolibException(ex.getMessage(), ex);
+            }
             ResXmlUtils.modNetworkSecurityConfig(netSecConfOrig);
             ResXmlUtils.setNetworkSecurityConfig(manifest);
             LOGGER.info("Added permissive network security config in manifest");
@@ -417,7 +425,11 @@ public class ApkBuilder {
         } else {
             File parentDir = outApk.getParentFile();
             if (parentDir != null) {
-                OS.mkdir(parentDir);
+                try {
+                    OS.mkdir(parentDir);
+                } catch (brut.common.BrutException ex) {
+                    throw new AndrolibException(ex.getMessage(), ex);
+                }
             }
         }
 

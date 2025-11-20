@@ -46,6 +46,12 @@ public final class AaptManager {
             if (termuxBinFile.exists() && termuxBinFile.canExecute()) {
                 return termuxBinFile;
             }
+            // In Termux environment, bundled binaries won't work on ARM architecture
+            // Require user to install aapt2 via package manager
+            throw new AndrolibException(
+                "Running in Termux environment but " + binName + " not found at: " + termuxBinFile.getPath() + "\n" +
+                "Please install aapt2: pkg install aapt2"
+            );
         }
 
         if (!OSDetection.is64Bit()) {

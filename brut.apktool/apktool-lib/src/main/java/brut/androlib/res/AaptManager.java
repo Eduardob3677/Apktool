@@ -46,6 +46,9 @@ public final class AaptManager {
             if (termuxBinFile.exists() && termuxBinFile.canExecute()) {
                 return termuxBinFile;
             }
+            // In Termux environment, we must use the system-installed aapt2
+            // because bundled binaries are x86-64 and Termux runs on aarch64
+            throw new AndrolibException(binName + " not found in Termux PREFIX. Please install it using: pkg install aapt2");
         }
 
         if (!OSDetection.is64Bit()) {

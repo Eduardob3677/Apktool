@@ -302,7 +302,7 @@ public class ApkBuilder {
 
         ExtFile tmpFile;
         try {
-            tmpFile = new ExtFile(File.createTempFile("APKTOOL", null));
+            tmpFile = new ExtFile(OS.createTempFile("APKTOOL", null));
         } catch (IOException ex) {
             throw new AndrolibException(ex);
         }
@@ -340,7 +340,7 @@ public class ApkBuilder {
 
         ExtFile tmpFile;
         try {
-            tmpFile = new ExtFile(File.createTempFile("APKTOOL", null));
+            tmpFile = new ExtFile(OS.createTempFile("APKTOOL", null));
         } catch (IOException ex) {
             throw new AndrolibException(ex);
         }

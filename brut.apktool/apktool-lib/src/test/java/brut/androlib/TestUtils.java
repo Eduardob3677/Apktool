@@ -49,7 +49,8 @@ public final class TestUtils {
         URL dirURL = clz.getClassLoader().getResource(dirPath);
         if (dirURL != null && dirURL.getProtocol().equals("file")) {
             try {
-                new FileDirectory(dirURL.getFile()).copyToDir(out);
+                String decodedPath = URLDecoder.decode(dirURL.getFile(), "UTF-8");
+                new FileDirectory(decodedPath).copyToDir(out);
             } catch (UnsupportedEncodingException ex) {
                 throw new BrutException(ex);
             }

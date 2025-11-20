@@ -39,6 +39,18 @@ public final class AaptManager {
     public static File getBinaryFile() throws AndrolibException {
         String binName = getBinaryName();
 
+        // Check for Termux PREFIX environment variable first
+        String termuxPrefix = System.getenv("PREFIX");
+        if (termuxPrefix != null && !termuxPrefix.isEmpty()) {
+            File termuxBinFile = new File(termuxPrefix, "bin" + File.separator + binName);
+            if (termuxBinFile.exists() && termuxBinFile.canExecute()) {
+                return termuxBinFile;
+            }
+            // In Termux environment, we must use the system-installed aapt2
+            // because bundled binaries are x86-64 and Termux runs on aarch64
+            throw new AndrolibException(binName + " not found in Termux PREFIX. Please install it using: pkg install aapt2");
+        }
+
         if (!OSDetection.is64Bit()) {
             throw new AndrolibException(binName + " binaries are not available for 32-bit platforms.");
         }

@@ -39,6 +39,21 @@ public final class AaptManager {
     public static File getBinaryFile() throws AndrolibException {
         String binName = getBinaryName();
 
+        // Check for Termux PREFIX environment variable first
+        String termuxPrefix = System.getenv("PREFIX");
+        if (termuxPrefix != null && !termuxPrefix.isEmpty()) {
+            File termuxBinFile = new File(termuxPrefix, "bin" + File.separator + binName);
+            if (termuxBinFile.exists() && termuxBinFile.canExecute()) {
+                return termuxBinFile;
+            }
+            // In Termux environment, bundled binaries won't work on ARM architecture
+            // Require user to install aapt2 via package manager
+            throw new AndrolibException(
+                "Running in Termux environment but " + binName + " not found at: " + termuxBinFile.getPath() + "\n" +
+                "Please install aapt2: pkg install aapt2"
+            );
+        }
+
         if (!OSDetection.is64Bit()) {
             throw new AndrolibException(binName + " binaries are not available for 32-bit platforms.");
         }
@@ -73,7 +88,8 @@ public final class AaptManager {
         if (!binFile.isFile() || !binFile.canRead()) {
             throw new AndrolibException("Could not read aapt binary: " + binFile.getPath());
         }
-        if (!binFile.setExecutable(true)) {
+        // Only set executable if it's not already executable (e.g., in Termux)
+        if (!binFile.canExecute() && !binFile.setExecutable(true)) {
             throw new AndrolibException("Could not set aapt binary as executable: " + binFile.getPath());
         }
     }

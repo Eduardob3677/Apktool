@@ -44,7 +44,8 @@ public final class AaptManager {
         String termuxPrefix = System.getenv("PREFIX");
         if (termuxPrefix != null && !termuxPrefix.isEmpty()) {
             File termuxBinFile = new File(termuxPrefix, "bin" + File.separator + binName);
-            if (termuxBinFile.exists() && termuxBinFile.canExecute()) {
+            if (termuxBinFile.exists()) {
+                setBinaryExecutable(termuxBinFile);
                 return termuxBinFile;
             }
             // On Termux (aarch64), we cannot use embedded x86-64 binaries

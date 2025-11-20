@@ -61,7 +61,11 @@ public final class Jar {
             }
             long suffix = ThreadLocalRandom.current().nextLong();
             suffix = suffix > Long.MIN_VALUE ? Math.abs(suffix) : 0;
-            File fileOut = File.createTempFile(tmpPrefix, suffix + ".tmp");
+            File tempDir = OS.getTempDir();
+            if (tempDir == null) {
+                throw new BrutException("Could not find a writable temporary directory");
+            }
+            File fileOut = File.createTempFile(tmpPrefix, suffix + ".tmp", tempDir);
             fileOut.deleteOnExit();
 
             BrutIO.copyAndClose(in, Files.newOutputStream(fileOut.toPath()));

@@ -302,7 +302,11 @@ public class ApkBuilder {
 
         ExtFile tmpFile;
         try {
-            tmpFile = new ExtFile(File.createTempFile("APKTOOL", null));
+            File tempDir = OS.getTempDir();
+            if (tempDir == null) {
+                throw new AndrolibException("Could not find a writable temporary directory");
+            }
+            tmpFile = new ExtFile(File.createTempFile("APKTOOL", null, tempDir));
         } catch (IOException ex) {
             throw new AndrolibException(ex);
         }
@@ -340,7 +344,11 @@ public class ApkBuilder {
 
         ExtFile tmpFile;
         try {
-            tmpFile = new ExtFile(File.createTempFile("APKTOOL", null));
+            File tempDir = OS.getTempDir();
+            if (tempDir == null) {
+                throw new AndrolibException("Could not find a writable temporary directory");
+            }
+            tmpFile = new ExtFile(File.createTempFile("APKTOOL", null, tempDir));
         } catch (IOException ex) {
             throw new AndrolibException(ex);
         }

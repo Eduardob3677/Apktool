@@ -39,6 +39,15 @@ public final class AaptManager {
     public static File getBinaryFile() throws AndrolibException {
         String binName = getBinaryName();
 
+        // Check for Termux PREFIX environment variable first
+        String termuxPrefix = System.getenv("PREFIX");
+        if (termuxPrefix != null && !termuxPrefix.isEmpty()) {
+            File termuxBinFile = new File(termuxPrefix, "bin" + File.separator + binName);
+            if (termuxBinFile.exists() && termuxBinFile.canExecute()) {
+                return termuxBinFile;
+            }
+        }
+
         if (!OSDetection.is64Bit()) {
             throw new AndrolibException(binName + " binaries are not available for 32-bit platforms.");
         }

@@ -93,8 +93,31 @@ public final class OS {
     }
 
     public static void mkdir(File dir) throws BrutException {
-        if (!dir.exists() && !dir.mkdirs()) {
-            throw new BrutException("Could not create directory: " + dir.getAbsolutePath());
+        if (dir.exists()) {
+            return;
+        }
+        
+        if (!dir.mkdirs()) {
+            // Provide more context about why directory creation failed
+            StringBuilder errorMsg = new StringBuilder("Could not create directory: " + dir.getAbsolutePath());
+            
+            // Check if a file exists with the same name
+            if (dir.exists() && !dir.isDirectory()) {
+                errorMsg.append(" (a file already exists with this name)");
+            }
+            // Check parent directory
+            else {
+                File parent = dir.getParentFile();
+                if (parent != null && !parent.exists()) {
+                    errorMsg.append(" (parent directory does not exist: ").append(parent.getAbsolutePath()).append(")");
+                } else if (parent != null && !parent.canWrite()) {
+                    errorMsg.append(" (parent directory is not writable: ").append(parent.getAbsolutePath()).append(")");
+                } else if (parent != null && !parent.isDirectory()) {
+                    errorMsg.append(" (parent path is not a directory: ").append(parent.getAbsolutePath()).append(")");
+                }
+            }
+            
+            throw new BrutException(errorMsg.toString());
         }
     }
 

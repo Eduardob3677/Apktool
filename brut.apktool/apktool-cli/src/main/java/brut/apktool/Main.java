@@ -512,9 +512,14 @@ public class Main {
         if (cli.hasOption(decodeOutputOption)) {
             outDir = new File(cli.getOptionValue(decodeOutputOption));
         } else {
-            outDir = new File(apkName.endsWith(".apk")
+            String outDirName = apkName.endsWith(".apk")
                 ? apkName.substring(0, apkName.length() - 4).trim()
-                : apkName + ".out");
+                : apkName + ".out";
+            outDir = new File(outDirName);
+        }
+        // Ensure the output directory path is absolute, relative to current working directory
+        if (!outDir.isAbsolute()) {
+            outDir = new File(System.getProperty("user.dir"), outDir.getPath());
         }
 
         try (ExtFile apkFile = new ExtFile(apkName)) {

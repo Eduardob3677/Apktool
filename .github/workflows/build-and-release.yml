@@ -1,0 +1,79 @@
+name: Build and Release Apktool
+
+on:
+  push:
+    branches:
+      - main
+    tags:
+      - 'v*'
+  workflow_dispatch:
+
+jobs:
+  build-and-release:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v5
+        with:
+          fetch-depth: 0
+      
+      - name: Set up JDK 17
+        uses: actions/setup-java@v5
+        with:
+          distribution: 'zulu'
+          java-version: 17
+      
+      - name: Setup Gradle
+        uses: gradle/actions/setup-gradle@v5.0.0
+      
+      - name: Extract AAPT2 version
+        id: aapt2_version
+        run: |
+          AAPT2_VERSION=$(brut.apktool/apktool-lib/src/main/resources/prebuilt/linux/aapt2 version 2>&1 | head -1 | awk '{print $NF}')
+          echo "version=$AAPT2_VERSION" >> $GITHUB_OUTPUT
+          echo "AAPT2 Version: $AAPT2_VERSION"
+      
+      - name: Build Apktool
+        run: ./gradlew build shadowJar proguard
+      
+      - name: Get Apktool version
+        id: apktool_version
+        run: |
+          APKTOOL_JAR=$(find brut.apktool/apktool-cli/build/libs -name "apktool-*.jar" ! -name "*-sources.jar" ! -name "*-javadoc.jar" ! -name "*-cli.jar" -type f | head -1)
+          APKTOOL_VERSION=$(basename "$APKTOOL_JAR" .jar | sed 's/apktool-//')
+          echo "version=$APKTOOL_VERSION" >> $GITHUB_OUTPUT
+          echo "jar_path=$APKTOOL_JAR" >> $GITHUB_OUTPUT
+          echo "Apktool Version: $APKTOOL_VERSION"
+          echo "Apktool JAR: $APKTOOL_JAR"
+      
+      - name: Upload Apktool artifact
+        uses: actions/upload-artifact@v5
+        with:
+          name: apktool-${{ steps.apktool_version.outputs.version }}
+          path: ${{ steps.apktool_version.outputs.jar_path }}
+          retention-days: 90
+      
+      - name: Create Release
+        if: startsWith(github.ref, 'refs/tags/')
+        uses: softprops/action-gh-release@v2
+        with:
+          files: ${{ steps.apktool_version.outputs.jar_path }}
+          tag_name: ${{ github.ref_name }}
+          name: Apktool ${{ steps.apktool_version.outputs.version }} (AAPT2 ${{ steps.aapt2_version.outputs.version }})
+          body: |
+            ## Apktool Release ${{ steps.apktool_version.outputs.version }}
+            
+            ### Build Information
+            - **AAPT2 Version**: ${{ steps.aapt2_version.outputs.version }}
+            - **Build Date**: ${{ github.event.head_commit.timestamp }}
+            - **Commit**: ${{ github.sha }}
+            
+            ### Download
+            Download the `apktool-${{ steps.apktool_version.outputs.version }}.jar` file from the assets below.
+          draft: false
+          prerelease: false
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

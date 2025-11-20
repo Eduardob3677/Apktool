@@ -34,9 +34,34 @@ import java.util.logging.Logger;
 
 public final class OS {
     private static final Logger LOGGER = Logger.getLogger("");
+    private static File sTempDir = null;
 
     private OS() {
         // Private constructor for utility class.
+    }
+
+    /**
+     * Gets the custom temporary directory ($HOME/.temp).
+     * Creates it if it doesn't exist.
+     */
+    private static File getTempDir() {
+        if (sTempDir == null) {
+            String home = System.getenv("HOME");
+            if (home == null || home.isEmpty()) {
+                home = System.getProperty("user.home");
+            }
+            sTempDir = new File(home, ".temp");
+            mkdir(sTempDir);
+        }
+        return sTempDir;
+    }
+
+    /**
+     * Creates a temporary file in $HOME/.temp directory.
+     */
+    public static File createTempFile(String prefix, String suffix) throws IOException {
+        File tempDir = getTempDir();
+        return File.createTempFile(prefix, suffix, tempDir);
     }
 
     public static void mkdir(String dir) {
@@ -177,7 +202,7 @@ public final class OS {
 
     public static File createTempDirectory() throws BrutException {
         try {
-            File tmp = File.createTempFile("BRUT", null);
+            File tmp = createTempFile("BRUT", null);
             tmp.deleteOnExit();
 
             if (!tmp.delete()) {

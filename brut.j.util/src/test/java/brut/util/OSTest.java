@@ -91,4 +91,31 @@ public class OSTest {
             OS.rmdir(tempDir);
         }
     }
+
+    @Test
+    public void testMkdirFailureWithParentFile() throws Exception {
+        // Test that error message includes helpful information when parent is a file
+        File tempDir = Files.createTempDirectory("apktool-test").toFile();
+        try {
+            File file = new File(tempDir, "testfile");
+            assertTrue("Test file should be created", file.createNewFile());
+            
+            // Try to create a directory where parent is a file - this should fail
+            File impossibleDir = new File(file, "subdir");
+            
+            try {
+                OS.mkdir(impossibleDir);
+                fail("Should have thrown BrutException");
+            } catch (BrutException ex) {
+                // Verify the error message contains useful information
+                String message = ex.getMessage();
+                assertTrue("Error message should contain directory path", 
+                    message.contains(impossibleDir.getAbsolutePath()));
+                assertTrue("Error message should explain the issue", 
+                    message.contains("parent") || message.contains("not a directory"));
+            }
+        } finally {
+            OS.rmdir(tempDir);
+        }
+    }
 }

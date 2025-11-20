@@ -34,9 +34,58 @@ import java.util.logging.Logger;
 
 public final class OS {
     private static final Logger LOGGER = Logger.getLogger("");
+    private static File sTempDir = null;
 
     private OS() {
         // Private constructor for utility class.
+    }
+
+    /**
+     * Gets the temporary directory to use for creating temporary files.
+     * First tries java.io.tmpdir, and if that's not writable, falls back to
+     * user.home/.apktool/tmp to support systems where /tmp is not writable.
+     *
+     * @return File object representing the temporary directory
+     */
+    public static File getTempDir() {
+        if (sTempDir != null && sTempDir.canWrite()) {
+            return sTempDir;
+        }
+
+        // First try the system temp directory
+        String tmpDir = System.getProperty("java.io.tmpdir");
+        if (tmpDir != null) {
+            File tmp = new File(tmpDir);
+            if (tmp.exists() && tmp.canWrite()) {
+                sTempDir = tmp;
+                return sTempDir;
+            }
+        }
+
+        // Fallback to user home directory
+        String userHome = System.getProperty("user.home");
+        if (userHome != null) {
+            File apktoolTmp = new File(userHome, ".apktool" + File.separator + "tmp");
+            if (!apktoolTmp.exists()) {
+                apktoolTmp.mkdirs();
+            }
+            if (apktoolTmp.exists() && apktoolTmp.canWrite()) {
+                sTempDir = apktoolTmp;
+                LOGGER.info("Using custom temp directory: " + apktoolTmp.getAbsolutePath());
+                return sTempDir;
+            }
+        }
+
+        // Last resort: use current directory
+        File currentDir = new File(".");
+        if (currentDir.canWrite()) {
+            sTempDir = currentDir;
+            LOGGER.warning("Using current directory for temp files: " + currentDir.getAbsolutePath());
+            return sTempDir;
+        }
+
+        // If all else fails, return null and let the caller handle it
+        return null;
     }
 
     public static void mkdir(String dir) {
@@ -177,7 +226,11 @@ public final class OS {
 
     public static File createTempDirectory() throws BrutException {
         try {
-            File tmp = File.createTempFile("BRUT", null);
+            File tempDir = getTempDir();
+            if (tempDir == null) {
+                throw new BrutException("Could not find a writable temporary directory");
+            }
+            File tmp = File.createTempFile("BRUT", null, tempDir);
             tmp.deleteOnExit();
 
             if (!tmp.delete()) {

@@ -88,13 +88,14 @@ public final class OS {
         return null;
     }
 
-    public static void mkdir(String dir) {
+    public static void mkdir(String dir) throws BrutException {
         mkdir(new File(dir));
     }
 
-    public static void mkdir(File dir) {
-        //noinspection ResultOfMethodCallIgnored
-        dir.mkdirs();
+    public static void mkdir(File dir) throws BrutException {
+        if (!dir.exists() && !dir.mkdirs()) {
+            throw new BrutException("Could not create directory: " + dir.getAbsolutePath());
+        }
     }
 
     public static void rmfile(String file) {

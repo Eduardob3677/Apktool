@@ -16,6 +16,7 @@
  */
 package brut.directory;
 
+import brut.common.BrutException;
 import brut.util.BrutIO;
 import brut.util.OS;
 
@@ -265,6 +266,8 @@ public abstract class AbstractDirectory implements Directory {
             LOGGER.warning(String.format("Skipping file %s (%s)", inFileName, ex.getMessage()));
         } catch (IOException ex) {
             throw new DirectoryException("Error copying file: " + inFileName, ex);
+        } catch (BrutException ex) {
+            throw new DirectoryException(ex.getMessage(), ex);
         }
     }
 

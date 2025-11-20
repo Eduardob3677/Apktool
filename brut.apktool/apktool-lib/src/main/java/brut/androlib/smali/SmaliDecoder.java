@@ -78,7 +78,11 @@ public class SmaliDecoder {
                     if (index > 1) {
                         smaliDir = new File(outDir.getParent(), "smali_classes" + index);
                         OS.rmdir(smaliDir);
-                        OS.mkdir(smaliDir);
+                        try {
+                            OS.mkdir(smaliDir);
+                        } catch (brut.common.BrutException ex) {
+                            throw new AndrolibException(ex.getMessage(), ex);
+                        }
                     }
                 }
                 dexFile = decodeInternal(dexEntry, smaliDir);
@@ -91,6 +95,8 @@ public class SmaliDecoder {
             mInferredApiLevel = apiLevel;
         } catch (IOException ex) {
             throw new AndrolibException("Could not baksmali file: " + mDexName, ex);
+        } catch (brut.common.BrutException ex) {
+            throw new AndrolibException(ex.getMessage(), ex);
         }
     }
 

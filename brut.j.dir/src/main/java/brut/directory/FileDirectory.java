@@ -16,6 +16,7 @@
  */
 package brut.directory;
 
+import brut.common.BrutException;
 import brut.util.OS;
 
 import java.io.File;
@@ -65,7 +66,11 @@ public class FileDirectory extends AbstractDirectory {
     @Override
     protected AbstractDirectory createDirLocal(String name) throws DirectoryException {
         File dir = new File(generatePath(name));
-        OS.mkdir(dir);
+        try {
+            OS.mkdir(dir);
+        } catch (BrutException ex) {
+            throw new DirectoryException(ex.getMessage(), ex);
+        }
         return new FileDirectory(dir);
     }
 

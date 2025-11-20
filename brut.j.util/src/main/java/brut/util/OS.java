@@ -43,6 +43,9 @@ public final class OS {
     /**
      * Gets the custom temporary directory ($HOME/.temp).
      * Creates it if it doesn't exist.
+     * Falls back to user.home system property if HOME environment variable is not set.
+     * 
+     * @return The temporary directory in user's home
      */
     private static File getTempDir() {
         if (sTempDir == null) {
@@ -57,7 +60,13 @@ public final class OS {
     }
 
     /**
-     * Creates a temporary file in $HOME/.temp directory.
+     * Creates a temporary file in $HOME/.temp directory instead of the system temp directory.
+     * This avoids permission issues with /tmp on some systems.
+     * 
+     * @param prefix The prefix string to be used in generating the file's name
+     * @param suffix The suffix string to be used in generating the file's name; may be null
+     * @return An abstract pathname denoting a newly-created empty file
+     * @throws IOException If a file could not be created
      */
     public static File createTempFile(String prefix, String suffix) throws IOException {
         File tempDir = getTempDir();

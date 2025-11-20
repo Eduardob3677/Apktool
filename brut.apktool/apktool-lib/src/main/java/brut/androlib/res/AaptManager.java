@@ -40,12 +40,15 @@ public final class AaptManager {
         String binName = getBinaryName();
 
         // Check for Termux PREFIX environment variable first
+        // Termux runs on aarch64 (ARM64), so embedded x86-64 binaries won't work
         String termuxPrefix = System.getenv("PREFIX");
         if (termuxPrefix != null && !termuxPrefix.isEmpty()) {
             File termuxBinFile = new File(termuxPrefix, "bin" + File.separator + binName);
             if (termuxBinFile.exists() && termuxBinFile.canExecute()) {
                 return termuxBinFile;
             }
+            // On Termux (aarch64), we cannot use embedded x86-64 binaries
+            throw new AndrolibException(binName + " not found in Termux. Please install it with: pkg install aapt2");
         }
 
         if (!OSDetection.is64Bit()) {

@@ -32,10 +32,12 @@ To use Apktool on Termux, you need:
    pkg install openjdk-21
    ```
 
-2. **AAPT2** (Android Asset Packaging Tool 2):
+2. **AAPT2** (Android Asset Packaging Tool 2) - **REQUIRED**:
    ```bash
    pkg install aapt2
    ```
+   
+   **Important**: AAPT2 is mandatory for Termux. The embedded aapt2 binary in Apktool is compiled for x86-64 and will not work on Termux's aarch64 (ARM64) architecture. You must install aapt2 from Termux packages.
 
 3. **Gradle** (for building from source):
    ```bash
@@ -93,6 +95,10 @@ The Termux support is implemented in `AaptManager.java`:
 - The `getBinaryFile()` method first checks for the `PREFIX` environment variable
 - If found, it looks for aapt2 in `$PREFIX/bin/aapt2`
 - If the Termux aapt2 is found and executable, it returns that path
-- Otherwise, it falls back to extracting and using the embedded aapt2 binary
+- **If PREFIX is set but aapt2 is not found, it throws an error** - this is because:
+  - Termux runs on aarch64 (ARM64) architecture
+  - The embedded aapt2 binaries in Apktool are compiled for x86-64
+  - x86-64 binaries cannot run on ARM64 Termux
+- On non-Termux environments, it falls back to extracting and using the embedded aapt2 binary
 
-This approach ensures compatibility with both Termux and standard environments.
+This approach ensures compatibility with both Termux and standard environments while preventing architecture mismatches.
